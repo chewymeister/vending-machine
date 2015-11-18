@@ -58,15 +58,34 @@ describe Vendor do
 
   context "when an item is selected" do
     context "and the correct amount of money has been inserted" do
+      let(:delivery) { vendor.deliver! }
       before do
-        vendor.insert_money!(1.00)
         vendor.choose_item!("Coke")
+        vendor.insert_money!(1.00)
       end
 
       it "the vending machine should return the correct product" do
-        delivery = vendor.deliver!
-
         expect(delivery.product).to eq "Coke"
+      end
+
+      it "the vending machine should return no change" do
+        expect(delivery.change).to eq 0.00
+      end
+    end
+
+    context "and too much money has been inserted" do
+      let(:delivery) { vendor.deliver! }
+      before do
+        vendor.choose_item!("Coke")
+        vendor.insert_money!(2.00)
+      end
+
+      it "the vending machine should return the correct product" do
+        expect(delivery.product).to eq "Coke"
+      end
+
+      it "the vending machine should return 1.00 in change" do
+        expect(delivery.change).to eq 1.00
       end
     end
 
@@ -82,7 +101,7 @@ describe Vendor do
         expect(delivery.product).to eq "Insufficient funds!"
       end
 
-      it "and should return the product once sufficient funds have been inserted" do
+      it "the vending machine should return the product once sufficient funds have been inserted" do
         expect{vendor.insert_money!(0.50)}.to change{vendor.deliver!.product}
           .from("Insufficient funds!").to("Coke")
       end
