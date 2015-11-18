@@ -22,35 +22,65 @@ class Vendor
     @balance += amount 
   end
 
-  def choose_item! product
-    @chosen_item = @inventory.select do |item|
-      item[:product] == product
-    end.first
+  def choose_item! product_name
+    @chosen_item = @inventory.find do |item|
+      item[:product] == product_name
+    end
+  end
+
+  def purchase_is_valid?
+    @balance >= @chosen_item[:price]
+  end
+
+  def validate_purchase!
+    @chosen_item[:stock] = @chosen_item[:stock] - 1 
+    @balance -= @chosen_item[:price]
   end
 
   def deliver!
-    @chosen_item[:stock] = @chosen_item[:stock] - 1 
-    @balance -= @chosen_item[:price]
-    Delivery.new(@chosen_item[:product], @balance)
+    if purchase_is_valid?
+      validate_purchase!
+      Delivery.new(@chosen_item[:product], @balance)
+    else
+      Delivery.new("Insufficient funds!", @balance)
+    end
   end
 end
 
 describe Vendor do
-  context "Once an item is selected and the appropriate amount of money is inserted" do
-    it "the vending machine should return the correct product" do
-      inventory = [
-        {product: 'Coke', price: 1.00, stock: 5},
-        {product: 'Mars Bar', price: 0.50, stock: 10},
-        {product: 'Sprite', price: 1.20, stock: 8}
-      ]
+  let(:inventory) {[
+    {product: 'Coke', price: 1.00, stock: 5},
+    {product: 'Mars Bar', price: 0.50, stock: 10},
+    {product: 'Sprite', price: 1.20, stock: 8}
+  ]}
 
-      vendor = Vendor.new(inventory)
-      vendor.insert_money!(1.00)
-      vendor.choose_item!("Coke")
-      delivery = vendor.deliver!
+  let(:vendor) { Vendor.new(inventory) }
 
-      expect(delivery.product).to eq "Coke"
-      expect(delivery.change).to eq 0.00
+  context "when an item is selected" do
+    context "and the correct amount of money has been inserted" do
+      before do
+        vendor.insert_money!(1.00)
+        vendor.choose_item!("Coke")
+      end
+
+      it "the vending machine should return the correct product" do
+        delivery = vendor.deliver!
+
+        expect(delivery.product).to eq "Coke"
+      end
+    end
+
+    context "and an insufficient amount of money has been inserted" do
+      before do
+        vendor.insert_money!(0.50)
+        vendor.choose_item!("Coke")
+      end
+
+      it "the vending machine should return an error message" do
+        delivery = vendor.deliver!
+
+        expect(delivery.product).to eq "Insufficient funds!"
+      end
     end
   end
 end
