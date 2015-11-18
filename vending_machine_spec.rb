@@ -32,14 +32,14 @@ class Vendor
     @balance >= @chosen_item[:price]
   end
 
-  def validate_purchase!
+  def checkout_purchase!
     @chosen_item[:stock] = @chosen_item[:stock] - 1 
     @balance -= @chosen_item[:price]
   end
 
   def deliver!
     if purchase_is_valid?
-      validate_purchase!
+      checkout_purchase!
       Delivery.new(@chosen_item[:product], @balance)
     else
       Delivery.new("Insufficient funds!", @balance)
@@ -80,6 +80,11 @@ describe Vendor do
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "Insufficient funds!"
+      end
+
+      it "and should return the product once sufficient funds have been inserted" do
+        expect{vendor.insert_money!(0.50)}.to change{vendor.deliver!.product}
+          .from("Insufficient funds!").to("Coke")
       end
     end
   end
