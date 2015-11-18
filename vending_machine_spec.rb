@@ -8,35 +8,30 @@
 #   The machine should keep track of the products and change that it contains.a
 
 require 'rspec'
-class Delivery
-end
 
 Delivery = Struct.new(:product, :change)
 
 class Vendor
-  attr_reader :balance
-
   def initialize inventory
     @inventory = inventory
     @balance = 0
+    @chosen_item = :empty
   end
 
-  def insert_money amount
+  def insert_money! amount
     @balance += amount 
   end
 
-  def select_item product
-    chosen_item = @inventory.select do |item|
+  def choose_item! product
+    @chosen_item = @inventory.select do |item|
       item[:product] == product
     end.first
-
-    chosen_item[:stock] = chosen_item[:stock] - 1 
-    @balance -= chosen_item[:price]
-    @delivery = Delivery.new(chosen_item[:product], @balance)
   end
 
-  def deliver
-    @delivery
+  def deliver!
+    @chosen_item[:stock] = @chosen_item[:stock] - 1 
+    @balance -= @chosen_item[:price]
+    Delivery.new(@chosen_item[:product], @balance)
   end
 end
 
@@ -50,9 +45,9 @@ describe Vendor do
       ]
 
       vendor = Vendor.new(inventory)
-      vendor.insert_money(1.00)
-      vendor.select_item("Coke")
-      delivery = vendor.deliver
+      vendor.insert_money!(1.00)
+      vendor.choose_item!("Coke")
+      delivery = vendor.deliver!
 
       expect(delivery.product).to eq "Coke"
       expect(delivery.change).to eq 0.00
