@@ -13,6 +13,7 @@ class ChangeCalculator
       twenty_pee: 0.2,
       ten_pee: 0.1,
       five_pee: 0.05,
+      two_pee: 0.02,
       one_pee: 0.01
     }
   end
@@ -76,6 +77,24 @@ describe ChangeCalculator do
       required_coins = calculator.change
       expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
                                      fifty_pee: 1, twenty_pee: 1, ten_pee: 1})
+    end
+
+    it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five pee coin" do
+      amount = 3.85
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 1,
+                                     ten_pee: 1, five_pee: 1})
+    end
+
+    it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five, 1 two pee coin" do
+      amount = 3.87
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 1,
+                                     ten_pee: 1, five_pee: 1, two_pee: 1})
     end
   end
 end
