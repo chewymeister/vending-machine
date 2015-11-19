@@ -134,24 +134,22 @@ describe Vendor do
       before do
         vendor.insert_money!(original_amount)
         vendor.choose_item!("Coke")
+        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
       end
 
       it "the vending machine should return the 'we do not have change' error message" do
-        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "We do not have change, please insert the exact amount"
       end
 
       it "the vending machine should return the original amount inserted" do
-        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
         delivery = vendor.deliver!
 
         expect(delivery.change).to eq original_amount
       end
 
       it "the vending machine should not have any funds remaining in the balance" do
-        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
         delivery = vendor.deliver!
 
         expect(delivery.change).to eq original_amount
@@ -168,15 +166,24 @@ describe Vendor do
       end
 
       it "the vending machine should return an error message" do
+        vendor.insert_money!(2.00)
+        vendor.choose_item!("Coke")
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "We do not have this item in stock, please choose another item"
       end
 
       it "the vending machine should not return the balance" do
+        vendor.insert_money!(2.00)
+        vendor.choose_item!("Coke")
         delivery = vendor.deliver!
 
         expect(delivery.change).to eq 0.00
+      end
+
+      it "the vending machine should return the product once a different product has been chosen" do
+        expect{vendor.choose_item!("Sprite")}.to change{vendor.deliver!.product}
+          .from("We do not have this item in stock, please choose another item").to("Sprite")
       end
     end
   end
