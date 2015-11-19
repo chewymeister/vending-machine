@@ -38,19 +38,28 @@ class Vendor
     !@change_calculator.sufficient_funds?(@balance - @chosen_item[:price])
   end
 
+  def insufficient_stock?
+    @chosen_item[:stock] < 1
+  end
+
   def checkout_purchase!
     @chosen_item[:stock] = @chosen_item[:stock] - 1 
-    @balance -= @chosen_item[:price]
+    @change = @balance - @chosen_item[:price]
+    @balance = 0
   end
 
   def deliver!
-    if insufficient_funds?
-      Delivery.new("Insufficient funds!", @balance)
+    if insufficient_stock?
+      Delivery.new("We do not have this item in stock, please choose another item", 0.00)
+    elsif insufficient_funds?
+      Delivery.new("Insufficient funds!", 0.00)
     elsif insufficient_change?
-      Delivery.new("We do not have change, please insert the exact amount", @balance)
+      change = @balance
+      balance = 0
+      Delivery.new("We do not have change, please insert the exact amount", change)
     else
       checkout_purchase!
-      Delivery.new(@chosen_item[:product], @balance)
+      Delivery.new(@chosen_item[:product], @change)
     end
   end
 end
@@ -120,25 +129,54 @@ describe Vendor do
       end
     end
 
-    context "when there aren't enough coins to return the change" do
+    context "when there aren't enough coins to return the correct change" do
       let(:original_amount) { 2.00 }
       before do
         vendor.insert_money!(original_amount)
         vendor.choose_item!("Coke")
       end
 
-      it "the vending machine should return an error message" do
+      it "the vending machine should return the 'we do not have change' error message" do
         allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "We do not have change, please insert the exact amount"
       end
 
-      it "the vending machine should return the entire balance" do
+      it "the vending machine should return the original amount inserted" do
         allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
         delivery = vendor.deliver!
 
         expect(delivery.change).to eq original_amount
+      end
+
+      it "the vending machine should not have any funds remaining in the balance" do
+        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
+        delivery = vendor.deliver!
+
+        expect(delivery.change).to eq original_amount
+      end
+    end
+
+    context "when there isn't enough stock" do
+      before do
+        10.times do |n|
+          vendor.insert_money!(2.00)
+          vendor.choose_item!("Coke")
+          vendor.deliver!
+        end
+      end
+
+      it "the vending machine should return an error message" do
+        delivery = vendor.deliver!
+
+        expect(delivery.product).to eq "We do not have this item in stock, please choose another item"
+      end
+
+      it "the vending machine should not return the balance" do
+        delivery = vendor.deliver!
+
+        expect(delivery.change).to eq 0.00
       end
     end
   end
