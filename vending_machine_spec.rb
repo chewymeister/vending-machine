@@ -12,7 +12,9 @@ require 'rspec'
 Delivery = Struct.new(:product, :change)
 
 class Vendor
-  def initialize inventory
+  def initialize inventory, change_calculator, till
+    @change_calculator = change_calculator
+    @till = till
     @inventory = inventory
     @balance = 0
     @chosen_item = :empty
@@ -28,8 +30,12 @@ class Vendor
     end
   end
 
-  def purchase_is_valid?
-    @balance >= @chosen_item[:price]
+  def insufficient_funds?
+    @balance < @chosen_item[:price]
+  end
+
+  def insufficient_change?
+    !@change_calculator.sufficient_funds?(@balance - @chosen_item[:price])
   end
 
   def checkout_purchase!
@@ -38,11 +44,13 @@ class Vendor
   end
 
   def deliver!
-    if purchase_is_valid?
+    if insufficient_funds?
+      Delivery.new("Insufficient funds!", @balance)
+    elsif insufficient_change?
+      Delivery.new("We do not have change, please insert the exact amount", @balance)
+    else
       checkout_purchase!
       Delivery.new(@chosen_item[:product], @balance)
-    else
-      Delivery.new("Insufficient funds!", @balance)
     end
   end
 end
@@ -53,8 +61,13 @@ describe Vendor do
     {product: 'Mars Bar', price: 0.50, stock: 10},
     {product: 'Sprite', price: 1.20, stock: 8}
   ]}
+  let(:till) { double("till") }
+  let(:change_calculator) { double("change_calculator") }
+  before do
+    allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
+  end
 
-  let(:vendor) { Vendor.new(inventory) }
+  let(:vendor) { Vendor.new(inventory, change_calculator, till) }
 
   context "when an item is selected" do
     context "and the correct amount of money has been inserted" do
@@ -104,6 +117,28 @@ describe Vendor do
       it "the vending machine should return the product once sufficient funds have been inserted" do
         expect{vendor.insert_money!(0.50)}.to change{vendor.deliver!.product}
           .from("Insufficient funds!").to("Coke")
+      end
+    end
+
+    context "when there aren't enough coins to return the change" do
+      let(:original_amount) { 2.00 }
+      before do
+        vendor.insert_money!(original_amount)
+        vendor.choose_item!("Coke")
+      end
+
+      it "the vending machine should return an error message" do
+        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
+        delivery = vendor.deliver!
+
+        expect(delivery.product).to eq "We do not have change, please insert the exact amount"
+      end
+
+      it "the vending machine should return the entire balance" do
+        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
+        delivery = vendor.deliver!
+
+        expect(delivery.change).to eq original_amount
       end
     end
   end
