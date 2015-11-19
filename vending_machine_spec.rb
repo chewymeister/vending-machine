@@ -5,7 +5,7 @@
 #   It should also return change if too much money is provided, or ask for more money if insufficient funds have been inserted.
 #   The machine should take an initial load of products and change. The change will be of denominations 1p, 2p, 5p, 10p, 20p, 50p, £1, £2.
 #   There should be a way of reloading either products or change at a later point.
-#   The machine should keep track of the products and change that it contains.a
+#   The machine should keep track of the products and change that it contains
 
 require 'rspec'
 
@@ -55,7 +55,7 @@ class Vendor
       Delivery.new("Insufficient funds!", 0.00)
     elsif insufficient_change?
       change = @balance
-      balance = 0
+      @balance = 0
       Delivery.new("We do not have change, please insert the exact amount", change)
     else
       checkout_purchase!
@@ -72,11 +72,11 @@ describe Vendor do
   ]}
   let(:till) { double("till") }
   let(:change_calculator) { double("change_calculator") }
+  let(:vendor) { Vendor.new(inventory, change_calculator, till) }
+
   before do
     allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
   end
-
-  let(:vendor) { Vendor.new(inventory, change_calculator, till) }
 
   context "when an item is selected" do
     context "and the correct amount of money has been inserted" do
@@ -151,32 +151,28 @@ describe Vendor do
 
       it "the vending machine should not have any funds remaining in the balance" do
         delivery = vendor.deliver!
+        allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
+        delivery = vendor.deliver!
 
-        expect(delivery.change).to eq original_amount
+        expect(delivery.product).to eq "Insufficient funds!"
       end
     end
 
     context "when there isn't enough stock" do
       before do
         10.times do |n|
-          vendor.insert_money!(2.00)
-          vendor.choose_item!("Coke")
-          vendor.deliver!
+          buy_coke
         end
       end
 
       it "the vending machine should return an error message" do
-        vendor.insert_money!(2.00)
-        vendor.choose_item!("Coke")
-        delivery = vendor.deliver!
+        delivery = buy_coke
 
         expect(delivery.product).to eq "We do not have this item in stock, please choose another item"
       end
 
       it "the vending machine should not return the balance" do
-        vendor.insert_money!(2.00)
-        vendor.choose_item!("Coke")
-        delivery = vendor.deliver!
+        delivery = buy_coke
 
         expect(delivery.change).to eq 0.00
       end
@@ -187,4 +183,10 @@ describe Vendor do
       end
     end
   end
+end
+
+def buy_coke
+  vendor.insert_money!(2.00)
+  vendor.choose_item!("Coke")
+  vendor.deliver!
 end
