@@ -16,17 +16,14 @@ class ChangeCalculator
     one_pee: 0.01
   }
 
-
   def initialize till
     @till = till
   end
 
   def change amount
-    required_coins = Hash.new(0)
-
     @amount = amount.round(2)
     COIN_MAP.each do |coin, value|
-      return required_coins if @amount == 0.00
+      return if @amount == 0.00
       next if !@till.in_stock?(coin)
 
       value = value.round(2)
@@ -35,8 +32,6 @@ class ChangeCalculator
         @amount = (@amount - value).round(2)
       end
     end
-
-    required_coins
   end
 
   def sufficient_coins?
