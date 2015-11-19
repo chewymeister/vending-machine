@@ -18,6 +18,7 @@ class Vendor
     @inventory = inventory
     @balance = 0
     @chosen_item = :empty
+    reload_stock!
   end
 
   def insert_money! amount
@@ -25,7 +26,7 @@ class Vendor
   end
 
   def choose_item! product_name
-    @chosen_item = @inventory.find do |item|
+    @chosen_item = @stock.find do |item|
       item[:product] == product_name
     end
   end
@@ -36,6 +37,10 @@ class Vendor
 
   def reload_coins!
     @till.reload_coins!
+  end
+
+  def reload_stock!
+    @stock = Marshal.load(Marshal.dump(@inventory))
   end
 
   def insufficient_change?
@@ -199,6 +204,15 @@ describe Vendor do
       it "the vending machine should return the product once a different product has been chosen" do
         expect{vendor.choose_item!("Sprite")}.to change{vendor.deliver!.product}
           .from("We do not have this item in stock, please choose another item").to("Sprite")
+      end
+
+      it "the vending machine should sell coke after stock has been reloaded" do
+        delivery = buy_coke
+        expect(delivery.product).to eq "We do not have this item in stock, please choose another item"
+  
+        vendor.reload_stock!
+        delivery = buy_coke
+        expect(delivery.product).to eq "Coke"
       end
     end
   end
