@@ -13,6 +13,10 @@ class Till
   }
 
   def initialize
+    reload_coins!
+  end
+
+  def reload_coins!
     @stock = FULL_TILL.dup
   end
 
@@ -77,13 +81,20 @@ describe Till do
   end
 
   context "when coins are not in stock" do
-    it "should return false for two pound coin" do
-      till = Till.new
+    let(:till) { Till.new }
+    before do
       10.times do |n|
         till.dispense!(:two_pound)
       end
+    end
 
+    it "should return false for two pound coin" do
       expect(till.in_stock?(:two_pound)).to be false
+    end
+
+    it "should return true for two pound coin when coins are reloaded" do
+      expect{till.reload_coins!}.to change{till.in_stock?(:two_pound)}
+        .from(false).to(true)
     end
   end
 end
