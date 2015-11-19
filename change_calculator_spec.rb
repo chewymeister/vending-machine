@@ -5,7 +5,7 @@ require 'rspec'
 
 class ChangeCalculator
   def initialize amount
-    @amount = amount
+    @amount = amount.round(2)
     @coin_map = {
       two_pound: 2.00,
       one_pound: 1.00,
@@ -21,9 +21,10 @@ class ChangeCalculator
     required_coins = Hash.new(0)
 
     @coin_map.each do |coin, value|
-      while @amount.round(2) >= value.round(2)
+      value = value.round(2)
+      while @amount >= value
         required_coins[coin] += 1
-        @amount = @amount.round(2) - value.round(2)
+        @amount = (@amount - value).round(2)
       end
     end
 
