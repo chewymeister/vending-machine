@@ -12,7 +12,7 @@ describe VendingMachine do
   let(:vendor) { VendingMachine.new(inventory, change_calculator, till) }
 
   before do
-    allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
+    allow(change_calculator).to receive(:sufficient_coins?).and_return(true)
   end
 
   context "when an item is selected" do
@@ -71,7 +71,7 @@ describe VendingMachine do
       before do
         vendor.insert_money!(original_amount)
         vendor.choose_item!("Coke")
-        allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
+        allow(change_calculator).to receive(:sufficient_coins?).and_return(false)
       end
 
       it "should return the 'we do not have change' error message" do
@@ -88,7 +88,7 @@ describe VendingMachine do
 
       it "should not have any funds remaining in the balance" do
         delivery = vendor.deliver!
-        allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
+        allow(change_calculator).to receive(:sufficient_coins?).and_return(true)
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "Insufficient funds!"
@@ -101,7 +101,7 @@ describe VendingMachine do
         expect(delivery.product).to eq "We do not have change, please insert the exact amount"
 
         vendor.reload_coins!
-        allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
+        allow(change_calculator).to receive(:sufficient_coins?).and_return(true)
 
         delivery = buy_coke
 
@@ -139,7 +139,8 @@ describe VendingMachine do
         expect(delivery.product).to eq "We do not have this item in stock, please choose another item"
   
         vendor.reload_stock!
-        delivery = buy_coke
+        vendor.insert_money!(2.00)
+        delivery = vendor.deliver!
         expect(delivery.product).to eq "Coke"
       end
     end

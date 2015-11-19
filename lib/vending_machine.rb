@@ -7,7 +7,7 @@ class VendingMachine
     @inventory = inventory
     @balance = 0
     @chosen_item = :empty
-    reload_stock!
+    copy_stock_from_inventory!
   end
 
   def insert_money! amount
@@ -40,6 +40,11 @@ class VendingMachine
   end
 
   def reload_stock!
+    copy_stock_from_inventory!
+    choose_item! @chosen_item[:product]
+  end
+
+  def copy_stock_from_inventory!
     @stock = Marshal.load(Marshal.dump(@inventory))
   end
 
@@ -50,7 +55,7 @@ class VendingMachine
   end
 
   def insufficient_change?
-    !@change_calculator.sufficient_funds?(@balance - @chosen_item[:price])
+    !@change_calculator.sufficient_coins?(@balance - @chosen_item[:price])
   end
 
   def insufficient_stock?
