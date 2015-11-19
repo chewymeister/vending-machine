@@ -23,28 +23,37 @@ class ChangeCalculator
     calculate_change_with @till, amount
   end
 
+  def sufficient_coins? amount
+    try_to_change amount
+    all_change_dispensed?
+  end
+
+  private
+
   def try_to_change amount
     till = @till.clone
     calculate_change_with till, amount
   end
 
   def calculate_change_with till, amount
-    @amount = amount.round(2)
+    @balance = amount
     COIN_MAP.each do |coin, value|
-      return if @amount == 0.0
-      next if !till.in_stock?(coin)
+      return if all_change_dispensed?
+      next if out_of_stock? till, coin
 
-      value = value.round(2)
-      while @amount >= value
+      while @balance >= value
         till.dispense!(coin)
-        @amount = (@amount - value).round(2)
+        @balance = (@balance - value).round(2)
       end
     end
   end
 
-  def sufficient_coins? amount
-    try_to_change amount
-    @amount == 0.0
+  def out_of_stock? till, coin
+    !till.in_stock?(coin)
+  end
+
+  def all_change_dispensed?
+    @balance == 0.0
   end
 end
 
