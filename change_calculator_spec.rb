@@ -19,7 +19,7 @@ class ChangeCalculator
     @till = till
   end
 
-  def change amount
+  def dispense_change! amount
     calculate_change_with @till, amount
   end
 
@@ -58,7 +58,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:two_pound).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 2 two pound coins" do
@@ -69,7 +69,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:two_pound).twice
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 2 two pound coins and 1 one pound coin" do
@@ -81,7 +81,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:one_pound).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 1 two pound, 1 one pound, and 1 fifty pee coin" do
@@ -93,7 +93,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:fifty_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty pee coin" do
@@ -107,7 +107,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:twenty_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten pee coin" do
@@ -122,7 +122,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:ten_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five pee coin" do
@@ -138,7 +138,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:five_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five, 1 two pee coin" do
@@ -155,7 +155,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:two_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five, 1 two and 1 one pee coin" do
@@ -173,7 +173,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:one_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
 
     it "should require 3 two pound, 1 one pound, 1 fifty, 2 twenty, 1 five, and 2 two pee coins" do
@@ -189,7 +189,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:two_pee).twice
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
   end
 
@@ -208,7 +208,7 @@ describe ChangeCalculator do
       expect(till).to receive(:dispense!).with(:one_pee).once
 
       calculator = ChangeCalculator.new(till)
-      calculator.change amount
+      calculator.dispense_change! amount
     end
   end
 
