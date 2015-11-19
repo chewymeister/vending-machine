@@ -199,12 +199,8 @@ describe ChangeCalculator do
 end
 
 def full_stock_for till
-  allow(till).to receive(:in_stock?).with(:two_pound).and_return(true)
-  allow(till).to receive(:in_stock?).with(:one_pound).and_return(true)
-  allow(till).to receive(:in_stock?).with(:fifty_pee).and_return(true)
-  allow(till).to receive(:in_stock?).with(:twenty_pee).and_return(true)
-  allow(till).to receive(:in_stock?).with(:ten_pee).and_return(true)
-  allow(till).to receive(:in_stock?).with(:five_pee).and_return(true)
-  allow(till).to receive(:in_stock?).with(:two_pee).and_return(true)
-  allow(till).to receive(:in_stock?).with(:one_pee).and_return(true)
+  coins = ChangeCalculator::COIN_MAP.keys
+  coins.each do |coin|
+    allow(till).to receive(:in_stock?).with(coin).and_return(true)
+  end
 end
