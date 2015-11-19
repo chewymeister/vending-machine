@@ -1,6 +1,6 @@
 # It should calculate how much change to give in the following scenarios
 # £2, £1, 50p, 20p, 10p, 5p, 2p, 1p
-# Test that when you validate change amount, you are not affecting the till, and when you give change, that you do affect the till balance
+
 require 'rspec'
 
 class ChangeCalculator
@@ -17,14 +17,13 @@ class ChangeCalculator
     }
   end
 
-  def change amount
-    puts "Initial amount: #{amount}"
+  def change
     required_coins = Hash.new(0)
 
     @coin_map.each do |coin, value|
-      while amount >= value
+      while @amount.round(2) >= value.round(2)
         required_coins[coin] += 1
-        amount -= value
+        @amount = @amount.round(2) - value.round(2)
       end
     end
 
@@ -37,15 +36,45 @@ describe ChangeCalculator do
     it "should require 1 two pound coin" do
       amount = 2.00
       calculator = ChangeCalculator.new(amount)
-      required_coins = calculator.change amount
+      required_coins = calculator.change
       expect(required_coins).to eq({ two_pound: 1 })
     end
 
     it "should require 2 two pound coins" do
       amount = 4.00
       calculator = ChangeCalculator.new(amount)
-      required_coins = calculator.change amount
+      required_coins = calculator.change
       expect(required_coins).to eq({ two_pound: 2 })
+    end
+
+    it "should require 2 two pound coins and 1 one pound coin" do
+      amount = 5.00
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 2, one_pound: 1 })
+    end
+
+    it "should require 1 two pound, 1 one pound, and 1 fifty pee coin" do
+      amount = 3.50
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1, fifty_pee: 1 })
+    end
+
+    it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty pee coin" do
+      amount = 3.70
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 1})
+    end
+
+    it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten pee coin" do
+      amount = 3.80
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 1, ten_pee: 1})
     end
   end
 end
