@@ -4,7 +4,6 @@
 require 'rspec'
 
 class ChangeCalculator
-  attr_reader :coin_map
   COIN_MAP = {
     two_pound: 2.00,
     one_pound: 1.00,
@@ -21,21 +20,31 @@ class ChangeCalculator
   end
 
   def change amount
+    calculate_change_with @till, amount
+  end
+
+  def try_to_change amount
+    till = @till.clone
+    calculate_change_with till, amount
+  end
+
+  def calculate_change_with till, amount
     @amount = amount.round(2)
     COIN_MAP.each do |coin, value|
-      return if @amount == 0.00
-      next if !@till.in_stock?(coin)
+      return if @amount == 0.0
+      next if !till.in_stock?(coin)
 
       value = value.round(2)
       while @amount >= value
-        @till.dispense!(coin)
+        till.dispense!(coin)
         @amount = (@amount - value).round(2)
       end
     end
   end
 
-  def sufficient_coins?
-    @amount == 0
+  def sufficient_coins? amount
+    try_to_change amount
+    @amount == 0.0
   end
 end
 
@@ -212,8 +221,7 @@ describe ChangeCalculator do
         allow(till).to receive(:dispense!).with(:two_pound).once
 
         calculator = ChangeCalculator.new(till)
-        calculator.change amount
-        expect(calculator.sufficient_coins?).to be true
+        expect(calculator.sufficient_coins?(amount)).to be true
       end
     end
 
@@ -224,8 +232,7 @@ describe ChangeCalculator do
         out_of_all_coins till
 
         calculator = ChangeCalculator.new(till)
-        calculator.change amount
-        expect(calculator.sufficient_coins?).to be false
+        expect(calculator.sufficient_coins?(amount)).to be false
       end
 
       it "should indicate that there isn't enough change" do
@@ -235,8 +242,7 @@ describe ChangeCalculator do
         allow(till).to receive(:dispense!).with(:one_pound).once
 
         calculator = ChangeCalculator.new(till)
-        calculator.change amount
-        expect(calculator.sufficient_coins?).to be false
+        expect(calculator.sufficient_coins?(amount)).to be false
       end
     end
   end
