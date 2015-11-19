@@ -1,6 +1,3 @@
-# It should calculate how much change to give in the following scenarios
-# £2, £1, 50p, 20p, 10p, 5p, 2p, 1p
-
 require 'rspec'
 
 class ChangeCalculator
