@@ -96,5 +96,36 @@ describe ChangeCalculator do
                                      fifty_pee: 1, twenty_pee: 1,
                                      ten_pee: 1, five_pee: 1, two_pee: 1})
     end
+
+    it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five, 1 two and 1 one pee coin" do
+      amount = 3.88
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 1,
+                                     ten_pee: 1, five_pee: 1,
+                                     two_pee: 1, one_pee: 1})
+    end
+
+    it "should require 3 two pound, 1 one pound, 1 fifty, 2 twenty, 1 five, and 2 two pee coins" do
+      amount = 7.99
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 3, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 2,
+                                     five_pee: 1, two_pee: 2 })
+    end
+  end
+
+  context "Examples for when there isn't sufficient change" do
+    it "should require 1 two pound, 1 one pound, 1 fifty, 1 twenty, 1 ten, 1 five, 1 two and 1 one pee coin" do
+      amount = 3.88
+      calculator = ChangeCalculator.new(amount)
+      required_coins = calculator.change
+      expect(required_coins).to eq({ two_pound: 1, one_pound: 1,
+                                     fifty_pee: 1, twenty_pee: 1,
+                                     ten_pee: 1, five_pee: 1,
+                                     two_pee: 1, one_pee: 1})
+    end
   end
 end
