@@ -34,6 +34,10 @@ class Vendor
     @balance < @chosen_item[:price]
   end
 
+  def reload_coins!
+    @till.reload_coins!
+  end
+
   def insufficient_change?
     !@change_calculator.sufficient_funds?(@balance - @chosen_item[:price])
   end
@@ -137,24 +141,39 @@ describe Vendor do
         allow(change_calculator).to receive(:sufficient_funds?).and_return(false)
       end
 
-      it "the vending machine should return the 'we do not have change' error message" do
+      it "should return the 'we do not have change' error message" do
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "We do not have change, please insert the exact amount"
       end
 
-      it "the vending machine should return the original amount inserted" do
+      it "should return the original amount inserted" do
         delivery = vendor.deliver!
 
         expect(delivery.change).to eq original_amount
       end
 
-      it "the vending machine should not have any funds remaining in the balance" do
+      it "should not have any funds remaining in the balance" do
         delivery = vendor.deliver!
         allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
         delivery = vendor.deliver!
 
         expect(delivery.product).to eq "Insufficient funds!"
+      end
+
+      it "should not give an error message once coins have been restocked" do
+        allow(till).to receive(:reload_coins!)
+
+        delivery = vendor.deliver!
+        expect(delivery.product).to eq "We do not have change, please insert the exact amount"
+
+        vendor.reload_coins!
+        allow(change_calculator).to receive(:sufficient_funds?).and_return(true)
+
+        delivery = buy_coke
+
+        expect(delivery.product).to eq "Coke"
+        expect(delivery.change).to eq 1.0
       end
     end
 
