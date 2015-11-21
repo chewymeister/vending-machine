@@ -1,6 +1,10 @@
 Delivery = Struct.new(:product, :change)
 
 class VendingMachine
+  STOCK_ERROR_MESSAGE = "We do not have this item in stock, please choose another item"
+  FUNDS_ERROR_MESSAGE ="Insufficient funds!" 
+  COIN_ERROR_MESSAGE = "We do not have change, please insert the exact amount"
+
   def initialize inventory, change_calculator, till
     @change_calculator = change_calculator
     @till = till
@@ -22,13 +26,13 @@ class VendingMachine
 
   def deliver!
     if insufficient_stock?
-      Delivery.new("We do not have this item in stock, please choose another item", 0.00)
+      Delivery.new(STOCK_ERROR_MESSAGE, 0.00)
     elsif insufficient_funds?
-      Delivery.new("Insufficient funds!", 0.00)
+      Delivery.new(FUNDS_ERROR_MESSAGE, 0.00)
     elsif insufficient_change?
       change = @balance
       @balance = 0
-      Delivery.new("We do not have change, please insert the exact amount", change)
+      Delivery.new(COIN_ERROR_MESSAGE, change)
     else
       checkout_purchase!
       Delivery.new(@chosen_item[:product], @change)
